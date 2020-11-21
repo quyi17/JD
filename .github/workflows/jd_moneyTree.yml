@@ -6,7 +6,7 @@ name: jd_moneyTree
 on:
 
   schedule:
-    - cron: '0/5 * * * *'
+    - cron: '0/120 * * * *'
   watch:
     types: started
   repository_dispatch:
