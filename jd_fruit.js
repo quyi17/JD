@@ -765,8 +765,16 @@ async function clockInIn() {
 //
 async function getAwardInviteFriend() {
   await friendListInitForFarm();
-  await receiveFriendInvite();
   console.log(`\n今日已邀请好友${$.friendList.inviteFriendCount}个 / 每日邀请上限${$.friendList.inviteFriendMax}个`);
+  console.log(`开始删除${$.friendList.friends.length}个好友,可拿每天的邀请奖励`);
+  for (let friend of $.friendList.friends) {
+    console.log(`\n开始删除好友 [${friend.shareCode}]`);
+    const deleteFriendForFarm = await request('deleteFriendForFarm', { "shareCode": `${friend.shareCode}`,"version":8,"channel":1 });
+    if (deleteFriendForFarm && deleteFriendForFarm.code === '0') {
+      console.log(`删除好友 [${friend.shareCode}] 成功\n`);
+    }
+  }
+  await receiveFriendInvite();
   if ($.friendList.inviteFriendCount > 0) {
     if ($.friendList.inviteFriendCount > $.friendList.inviteFriendGotAwardCount) {
       console.log('开始领取邀请好友的奖励');
