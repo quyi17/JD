@@ -9,11 +9,14 @@
 [task_local]
 #领京豆额外奖励
 10 7 * * * https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_bean_home.js, tag=领京豆额外奖励, img-url=https://raw.githubusercontent.com/58xinian/icon/master/jd_bean_home.png, enabled=true
+
 ================Loon==============
 [Script]
 cron "10 7 * * *" script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_bean_home.js, tag=领京豆额外奖励
+
 ===============Surge=================
 领京豆额外奖励 = type=cron,cronexp="10 7 * * *",wake-system=1,timeout=20,script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_bean_home.js
+
 ============小火箭=========
 领京豆额外奖励 = type=cron,script-path=https://raw.githubusercontent.com/lxk0301/jd_scripts/master/jd_bean_home.js, cronexpr="10 7 * * *", timeout=200, enable=true
  */
@@ -43,7 +46,8 @@ if ($.isNode()) {
 const JD_API_HOST = 'https://api.m.jd.com/';
 !(async () => {
   $.newShareCodes = []
-  await getAuthorShareCode()
+  await getAuthorShareCode();
+  await getAuthorShareCode2();
   if (!cookiesArr[0]) {
     $.msg($.name, '【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/', {"open-url": "https://bean.m.jd.com/"});
     return;
@@ -71,21 +75,34 @@ const JD_API_HOST = 'https://api.m.jd.com/';
       await jdBeanHome();
     }
   }
-    for (let i = 0; i < cookiesArr.length; i++) {
-      if (cookiesArr[i]) {
-        $.UserName = decodeURIComponent(cookie.match(/pt_pin=(.+?);/) && cookie.match(/pt_pin=(.+?);/)[1])
-        console.log(`${$.UserName}去帮助下一个人`)
-        cookie = cookiesArr[i];
-        if ($.newShareCodes.length > 1) {
-          let code = $.newShareCodes[(i + 1) % $.newShareCodes.length]
-          await help(code[0], code[1])
+  for (let i = 0; i < cookiesArr.length; i++) {
+    if (cookiesArr[i]) {
+      $.UserName = decodeURIComponent(cookie.match(/pt_pin=(.+?);/) && cookie.match(/pt_pin=(.+?);/)[1])
+      console.log(`${$.UserName}去帮助下一个人`)
+      cookie = cookiesArr[i];
+      if ($.newShareCodes.length > 1) {
+        let code = $.newShareCodes[(i + 1) % $.newShareCodes.length]
+        await help(code[0], code[1])
+      }
+      if (helpAuthor && $.authorCode) {
+        console.log(`去帮助作者`)
+        const helpRes = await help($.authorCode[0], $.authorCode[1])
+        if (helpRes && helpRes.data.respCode === 'SG209') {
+          console.log(`助力次数已耗尽，跳出助力`)
+          break;
         }
-        if (helpAuthor && $.authorCode) {
-          console.log(`去帮助作者`)
-          await help($.authorCode[0], $.authorCode[1])
+      }
+      if (helpAuthor && $.authorCode2) {
+        for (let code of $.authorCode2) {
+          const helpRes = await help(code.shareCode, code.groupCode);
+          if (helpRes && helpRes.data.respCode === 'SG209') {
+            console.log(`助力次数已耗尽，跳出助力`)
+            break;
+          }
         }
       }
     }
+  }
 })()
   .catch((e) => {
     $.log('', `❌ ${$.name}, 失败! 原因: ${e}!`, '')
@@ -118,7 +135,26 @@ function getAuthorShareCode() {
     })
   })
 }
-
+function getAuthorShareCode2() {
+  return new Promise(resolve => {
+    $.get({url: "https://gitee.com/lxk0301/updateTeam/raw/master/jd_updateBeanHome.json",headers:{
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/87.0.4280.88"
+      }}, async (err, resp, data) => {
+      try {
+        if (err) {
+        } else {
+          if (safeGet(data)) {
+            $.authorCode2 = JSON.parse(data);
+          }
+        }
+      } catch (e) {
+        $.logErr(e, resp)
+      } finally {
+        resolve();
+      }
+    })
+  })
+}
 function getUserInfo() {
   return new Promise(resolve => {
     $.post(taskUrl('signBeanGroupStageIndex', 'body'), async (err, resp, data) => {
@@ -216,7 +252,7 @@ function help(shareCode, groupCode, isTask = 0) {
       } catch (e) {
         $.logErr(e, resp)
       } finally {
-        resolve();
+        resolve(data);
       }
     })
   })
@@ -417,7 +453,7 @@ function jsonParse(str) {
       return JSON.parse(str);
     } catch (e) {
       console.log(e);
-      $.msg($.name, '', '不要在BoxJS手动复制粘贴修改cookie')
+      $.msg($.name, '', '请勿随意在BoxJs输入框修改内容\n建议通过脚本去获取cookie')
       return [];
     }
   }
