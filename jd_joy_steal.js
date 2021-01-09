@@ -35,6 +35,7 @@ if ($.isNode()) {
   cookiesArr.reverse();
   cookiesArr.push(...[$.getdata('CookieJD2'), $.getdata('CookieJD')]);
   cookiesArr.reverse();
+  cookiesArr = cookiesArr.filter(item => item !== "" && item !== null && item !== undefined);
 }
 let message = '', subTitle = '';
 
@@ -45,7 +46,7 @@ const weAppUrl = 'https://draw.jdfcloud.com//pet';
 const JD_API_HOST = 'https://jdjoy.jd.com/pet'
 !(async () => {
   if (!cookiesArr[0]) {
-    $.msg($.name, '【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/', {"open-url": "https://bean.m.jd.com/"});
+    $.msg($.name, '【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/bean/signIndex.action', {"open-url": "https://bean.m.jd.com/bean/signIndex.action"});
     return;
   }
   for (let i = 0; i < cookiesArr.length; i++) {
@@ -58,12 +59,10 @@ const JD_API_HOST = 'https://jdjoy.jd.com/pet'
       await TotalBean();
       console.log(`\n开始【京东账号${$.index}】${$.nickName || $.UserName}\n`);
       if (!$.isLogin) {
-        $.msg($.name, `【提示】cookie已失效`, `京东账号${$.index} ${$.nickName || $.UserName}\n请重新登录获取\nhttps://bean.m.jd.com/`, {"open-url": "https://bean.m.jd.com/"});
+        $.msg($.name, `【提示】cookie已失效`, `京东账号${$.index} ${$.nickName || $.UserName}\n请重新登录获取\nhttps://bean.m.jd.com/bean/signIndex.action`, {"open-url": "https://bean.m.jd.com/bean/signIndex.action"});
 
         if ($.isNode()) {
           await notify.sendNotify(`${$.name}cookie已失效 - ${$.UserName}`, `京东账号${$.index} ${$.UserName}\n请重新登录获取cookie`);
-        } else {
-          $.setdata('', `CookieJD${i ? i + 1 : "" }`);//cookie失效，故清空cookie。$.setdata('', `CookieJD${i ? i + 1 : "" }`);//cookie失效，故清空cookie。
         }
         continue
       }
@@ -140,6 +139,9 @@ async function stealFriendsFood() {
         if (getRandomFoodRes && getRandomFoodRes.success) {
           if (getRandomFoodRes.errorCode === 'steal_ok') {
             $.stealFood += getRandomFoodRes.data;
+          } else if (getRandomFoodRes.errorCode === 'chance_full') {
+            console.log('偷好友狗粮已达上限，跳出循环');
+            break;
           }
         }
       } else if (stealStatus === 'chance_full') {
@@ -449,23 +451,26 @@ function getCoinChanges() {
   })
 }
 function showMsg() {
-  $.stealFood = $.stealFood >= 0 ? `【偷好友狗粮】获取${$.stealFood}g狗粮\n` : `【偷好友狗粮】${$.stealFood}\n`;
-  $.stealFriendCoin = $.stealFriendCoin >= 0 ? `【领取好友积分】获得${$.stealFriendCoin}个\n` : `【领取好友积分】${$.stealFriendCoin}\n`;
-  $.helpFood = $.helpFood >= 0 ? `【给好友喂食】消耗${$.helpFood}g狗粮,获得积分${$.helpFood}个\n` : `【给好友喂食】${$.helpFood}\n`;
-  message += $.stealFriendCoin;
-  message += $.stealFood;
-  message += $.helpFood;
-  let ctrTemp;
-  if ($.getdata('jdJoyStealNotify')) {
-    ctrTemp = `${$.getdata('jdJoyStealNotify')}` === 'false';
-  } else {
-    ctrTemp = `${jdNotify}` === 'false';
-  }
-  if (ctrTemp) {
-    $.msg($.name, '', message);
-  } else {
-    $.log(`\n${message}\n`);
-  }
+  return new Promise(resolve => {
+    $.stealFood = $.stealFood >= 0 ? `【偷好友狗粮】获取${$.stealFood}g狗粮\n` : `【偷好友狗粮】${$.stealFood}\n`;
+    $.stealFriendCoin = $.stealFriendCoin >= 0 ? `【领取好友积分】获得${$.stealFriendCoin}个\n` : `【领取好友积分】${$.stealFriendCoin}\n`;
+    $.helpFood = $.helpFood >= 0 ? `【给好友喂食】消耗${$.helpFood}g狗粮,获得积分${$.helpFood}个\n` : `【给好友喂食】${$.helpFood}\n`;
+    message += $.stealFriendCoin;
+    message += $.stealFood;
+    message += $.helpFood;
+    let ctrTemp;
+    if ($.getdata('jdJoyStealNotify')) {
+      ctrTemp = `${$.getdata('jdJoyStealNotify')}` === 'false';
+    } else {
+      ctrTemp = `${jdNotify}` === 'false';
+    }
+    if (ctrTemp) {
+      $.msg($.name, '', message);
+    } else {
+      $.log(`\n${message}\n`);
+    }
+    resolve()
+  })
 }
 function TotalBean() {
   return new Promise(async resolve => {
