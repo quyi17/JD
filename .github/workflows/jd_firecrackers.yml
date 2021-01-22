@@ -1,12 +1,12 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: jd_health
+name: jd_firecrackers
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '10 16 * * *'
+    - cron: '10 0,13 * * *'
   watch:
     types: started
   #提交执行
@@ -34,9 +34,9 @@ jobs:
     - name: npm install
       run: |
         npm install
-    - name: '运行 【健康抽奖机】'
+    - name: '运行 【集鞭炮赢京豆】'
       run: |
-        node jd_health.js
+        node jd_firecrackers.js
       env:
         JD_COOKIE: ${{ secrets.JD_COOKIE }}
         JD_DEBUG: ${{ secrets.JD_DEBUG }}
