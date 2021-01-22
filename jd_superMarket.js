@@ -2,7 +2,7 @@
  * @Author: lxk0301 https://github.com/lxk0301 
  * @Date: 2020-08-16 18:54:16
  * @Last Modified by: lxk0301
- * @Last Modified time: 2021-1-9 18:22:37
+ * @Last Modified time: 2021-1-9 21:22:37
  */
 /*
 东东超市(活动入口：京东APP-》首页-》京东超市-》底部东东超市)
@@ -35,12 +35,7 @@ const JD_API_HOST = 'https://api.m.jd.com/api';
 //助力好友分享码
 //此此内容是IOS用户下载脚本到本地使用，填写互助码的地方，同一京东账号的好友互助码请使用@符号隔开。
 //下面给出两个账号的填写示例（iOS只支持2个京东账号）
-let shareCodes = [ // IOS本地脚本用户这个列表填入你要助力的好友的shareCode
-  //账号一的好友shareCode,不同好友的shareCode中间用@符号隔开
-  '-4msulYas0O2JsRhE-2TA5XZmBQ@eU9Yar_mb_9z92_WmXNG0w@eU9YaejjYv4g8T2EwnsVhQ',
-  //账号二的好友shareCode,不同好友的shareCode中间用@符号隔开
-  'aURoM7PtY_Q@eU9Ya-y2N_5z9DvXwyIV0A@eU9YaOnjYK4j-GvWmXIWhA',
-]
+let shareCodes = []
 
 !(async () => {
   await requireConfig();
@@ -90,7 +85,7 @@ async function jdSuperMarket() {
   await daySign();//每日签到
   await BeanSign()//
   await doDailyTask();//做日常任务，分享，关注店铺，
-  await help();//商圈助力
+  // await help();//商圈助力
   //await smtgQueryPkTask();//做商品PK任务
   await drawLottery();//抽奖功能(招财进宝)
   // await myProductList();//货架
@@ -99,7 +94,8 @@ async function jdSuperMarket() {
   // await limitTimeProduct();
   await smtg_shopIndex();
   await smtgHome();
-  await receiveUserUpgradeBlue()
+  await receiveUserUpgradeBlue();
+  await Home();
 }
 function showMsg() {
   $.log(`【京东账号${$.index}】${$.nickName}\n${message}`);
@@ -313,7 +309,7 @@ async function businessCircleActivity() {
       console.log(`\n注：PK会在每天的七点自动随机加入lxk0301创建的队伍\n`)
       await updatePkActivityId();
       if (!$.updatePkActivityIdRes) await updatePkActivityIdCDN('https://gitee.com/lxk0301/updateTeam/raw/master/jd_updateTeam.json');
-      if (!$.updatePkActivityIdRes) await updatePkActivityIdCDN('https://cdn.jsdelivr.net/gh/lxk0301/updateTeam@master/jd_updateTeam.json');
+      if (!$.updatePkActivityIdRes) await updatePkActivityIdCDN('https://cdn.jsdelivr.net/gh/LXK9301/updateTeam@master/jd_updateTeam.json');
       console.log(`\nupdatePkActivityId[pkActivityId]:::${$.updatePkActivityIdRes.pkActivityId}`);
       console.log(`\n京东服务器返回的[pkActivityId] ${pkActivityId}`);
       if ($.updatePkActivityIdRes && ($.updatePkActivityIdRes.pkActivityId === pkActivityId)) {
@@ -369,12 +365,9 @@ async function businessCircleActivity() {
     }
     if (pkStatus === 1) {
       console.log(`商圈PK进行中\n`)
-    } else if (pkStatus === 2) {
-      console.log(`商圈PK结束了`)
-      if (prizeInfo.pkPrizeStatus === 2) {
-        console.log(`开始领取商圈PK奖励`);
+    if (!teamId) {
         const receivedPkTeamPrize = await smtg_receivedPkTeamPrize();
-        console.log(`商圈PK奖励领取结果：${JSON.stringify(receivedPkTeamPrize)}`)
+        console.log(`商圈PK奖励领取结果：${JSON.stringify(receivedPkTeamPrize)}\n`)
         if (receivedPkTeamPrize.data.bizCode === 0) {
           if (receivedPkTeamPrize.data.result.pkResult === 1) {
             const { pkTeamPrizeInfoVO } = receivedPkTeamPrize.data.result;
@@ -388,6 +381,26 @@ async function businessCircleActivity() {
             }
           }
         }
+      }
+    } else if (pkStatus === 2) {
+      console.log(`商圈PK结束了`)
+      if (prizeInfo.pkPrizeStatus === 2) {
+        console.log(`开始领取商圈PK奖励`);
+        // const receivedPkTeamPrize = await smtg_receivedPkTeamPrize();
+        // console.log(`商圈PK奖励领取结果：${JSON.stringify(receivedPkTeamPrize)}`)
+        // if (receivedPkTeamPrize.data.bizCode === 0) {
+        //   if (receivedPkTeamPrize.data.result.pkResult === 1) {
+        //     const { pkTeamPrizeInfoVO } = receivedPkTeamPrize.data.result;
+        //     message += `【商圈PK奖励】${pkTeamPrizeInfoVO.blueCoin}蓝币领取成功\n`;
+        //     if ($.isNode()) {
+        //       await notify.sendNotify(`${$.name} - 账号${$.index} - ${$.nickName}`, `【京东账号${$.index}】 ${$.nickName}\n【商圈队伍】PK获胜\n【奖励】${pkTeamPrizeInfoVO.blueCoin}蓝币领取成功`)
+        //     }
+        //   } else if (receivedPkTeamPrize.data.result.pkResult === 2) {
+        //     if ($.isNode()) {
+        //       await notify.sendNotify(`${$.name} - 账号${$.index} - ${$.nickName}`, `【京东账号${$.index}】 ${$.nickName}\n【商圈队伍】PK失败`)
+        //     }
+        //   }
+        // }
       } else if (prizeInfo.pkPrizeStatus === 1) {
         console.log(`商圈PK奖励已经领取\n`)
       }
@@ -706,7 +719,7 @@ async function receiveUserUpgradeBlue() {
   if ($.userUpgradeBlueVos && $.userUpgradeBlueVos.length > 0) {
     for (let item of $.userUpgradeBlueVos) {
       const receiveCoin = await smtgReceiveCoin({ "id": item.id, "type": 5 })
-      $.log(`\n${JSON.stringify(receiveCoin)}`)
+      // $.log(`\n${JSON.stringify(receiveCoin)}`)
       if (receiveCoin && receiveCoin.data['bizCode'] === 0) {
         $.receiveUserUpgradeBlue += receiveCoin.data.result['receivedBlue']
       }
@@ -717,6 +730,15 @@ async function receiveUserUpgradeBlue() {
   // $.log(`${JSON.stringify(res)}\n`)
   if (res && res.data['bizCode'] === 0) {
     console.log(`\n收取营业额：获得 ${res.data.result['receivedTurnover']}蓝币\n`);
+  }
+}
+async function Home() {
+  const homeRes = await smtgHome();
+  if (homeRes && homeRes.data['bizCode'] === 0) {
+    const { result } = homeRes.data;
+    const { shopName, totalBlue } = result;
+    subTitle = shopName;
+    message += `【总蓝币】${totalBlue}个\n`;
   }
 }
 //=============================================脚本使用到的京东API=====================================
@@ -734,7 +756,8 @@ function smtg_shopIndex() {
         } else {
           data = JSON.parse(data);
           if (data && data.data['bizCode'] === 0) {
-            const { shopId, shelfList } = data.data['result'];
+            const { shopId, shelfList, merchandiseList, level } = data.data['result'];
+            message += `【店铺等级】${level}\n`;
             if (shelfList && shelfList.length > 0) {
               for (let item of shelfList) {
                 //status: 2可解锁,1可升级,-1不可解锁
@@ -750,6 +773,16 @@ function smtg_shopIndex() {
                   $.log(`[${item['name']}] 已解锁，当前等级：${item['level']}级`)
                 } else {
                   $.log(`未知店铺状态(status)：${item['status']}\n`)
+                }
+              }
+            }
+            if (data.data['result']['forSaleMerchandise']) {
+              $.log(`\n限时商品${data.data['result']['forSaleMerchandise']['name']}已上架`)
+            } else {
+              if (merchandiseList && merchandiseList.length > 0) {
+                for (let  item of merchandiseList) {
+                  console.log(`发现限时商品${item.name}\n`);
+                  await smtg_sellMerchandise({"shopId": shopId,"merchandiseId": item['id'],"channel":"18"})
                 }
               }
             }
@@ -802,11 +835,29 @@ function smtg_shelfUpgrade(body) {
     })
   })
 }
+//售卖限时商品API
+function smtg_sellMerchandise(body) {
+  return new Promise((resolve) => {
+    $.get(taskUrl('smtg_sellMerchandise', body), (err, resp, data) => {
+      try {
+        if (err) {
+          console.log('\n京小超: API查询请求失败 ‼️‼️')
+          console.log(JSON.stringify(err));
+        } else {
+          $.log(`限时商品售卖结果:${data}\n`)
+          data = JSON.parse(data);
+        }
+      } catch (e) {
+        $.logErr(e, resp);
+      } finally {
+        resolve(data);
+      }
+    })
+  })
+}
 //新版东东超市
-function updatePkActivityId(url = 'https://raw.githubusercontent.com/lxk0301/updateTeam/master/jd_updateTeam.json') {
+function updatePkActivityId(url = 'https://raw.githubusercontent.com/LXK9301/updateTeam/master/jd_updateTeam.json') {
   return new Promise(resolve => {
-    //https://cdn.jsdelivr.net/gh/lxk0301/updateTeam@master/jd_updateTeam.json
-    //https://raw.githubusercontent.com/lxk0301/updateTeam/master/jd_updateTeam.json
     $.get({url}, async (err, resp, data) => {
       try {
         if (err) {
@@ -823,10 +874,8 @@ function updatePkActivityId(url = 'https://raw.githubusercontent.com/lxk0301/upd
     })
   })
 }
-function updatePkActivityIdCDN(url = 'https://raw.fastgit.org/lxk0301/updateTeam/master/jd_updateTeam.json') {
+function updatePkActivityIdCDN(url) {
   return new Promise(async resolve => {
-    //https://cdn.jsdelivr.net/gh/lxk0301/updateTeam@master/jd_updateTeam.json
-    //https://raw.githubusercontent.com/lxk0301/updateTeam/master/jd_updateTeam.json
     const headers = {
       "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/87.0.4280.88"
     }
@@ -945,8 +994,6 @@ function smtgHome() {
             const { shopName, totalBlue, userUpgradeBlueVos, turnoverProgress } = result;
             $.userUpgradeBlueVos = userUpgradeBlueVos;
             $.turnoverProgress = turnoverProgress;//是否可解锁
-            subTitle = shopName;
-            message += `【总蓝币】${totalBlue}个\n`;
           }
         }
       } catch (e) {
@@ -1500,7 +1547,7 @@ function TotalBean() {
         "Connection": "keep-alive",
         "Cookie": cookie,
         "Referer": "https://wqs.jd.com/my/jingdou/my.shtml?sceneval=2",
-        "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0") : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0")
+        "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0")
       }
     }
     $.post(options, (err, resp, data) => {
@@ -1532,7 +1579,7 @@ function taskUrl(function_id, body = {}) {
   return {
     url: `${JD_API_HOST}?functionId=${function_id}&appid=jdsupermarket&clientVersion=8.0.0&client=m&body=${escape(JSON.stringify(body))}&t=${Date.now()}`,
     headers: {
-      'User-Agent': $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0") : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0"),
+      'User-Agent': $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0"),
       'Host': 'api.m.jd.com',
       'Cookie': cookie,
       'Referer': 'https://jdsupermarket.jd.com/game',

@@ -244,7 +244,7 @@ function getJxFactory(){
         try {
           if (err) {
             console.log(`${JSON.stringify(err)}`);
-            console.log(`惊喜工厂 API请求失败，请检查网路重试`);
+            console.log(`京喜工厂 API请求失败，请检查网路重试`);
           } else {
             if (safeGet(data)) {
               data = JSON.parse(data);
@@ -262,7 +262,7 @@ function getJxFactory(){
                   $.commodityDimId = production.commodityDimId;
                   $.encryptPin = data.user.encryptPin;
                   // subTitle = data.user.pin;
-                  console.log(`【账号${$.index}（${$.nickName || $.UserName}）惊喜工厂】${data.user.encryptPin}`);
+                  console.log(`【账号${$.index}（${$.nickName || $.UserName}）京喜工厂】${data.user.encryptPin}`);
                 }
               } else {
                 $.unActive = false; //标记是否开启了京喜活动或者选购了商品进行生产
@@ -289,6 +289,60 @@ function getJxFactory(){
     );
   })
 }
+
+function getJxNc(){
+  const JXNC_API_HOST = "https://wq.jd.com/";
+
+  function JXNC_taskurl(function_path, body) {
+    return {
+      url: `${JXNC_API_HOST}cubeactive/farm/${function_path}?${body}&farm_jstoken=&phoneid=&timestamp=&sceneval=2&g_login_type=1&_=${Date.now()}&g_ty=ls`,
+      headers: {
+        Cookie: cookie,
+        Accept: `*/*`,
+        Connection: `keep-alive`,
+        Referer: `https://st.jingxi.com/pingou/dream_factory/index.html`,
+        'Accept-Encoding': `gzip, deflate, br`,
+        Host: `wq.jd.com`,
+        'Accept-Language': `zh-cn`,
+      },
+    };
+  }
+
+  return new Promise(resolve => {
+    $.get(
+      JXNC_taskurl('query', `type=1`),
+      async (err, resp, data) => {
+        try {
+          if (err) {
+            console.log(`${JSON.stringify(err)}`);
+            console.log(`京喜农场 API请求失败，请检查网路重试`);
+          } else {
+            data = data.match(/try\{Query\(([\s\S]*)\)\;\}catch\(e\)\{\}/)[1];
+            if (safeGet(data)) {
+              data = JSON.parse(data);
+              if (data["ret"] === 0) {
+                console.log(`【账号${$.index}（${$.nickName || $.UserName}）京喜农场助力码】${data.smp}`);
+
+                if (data.active) {
+                  console.log(`【账号${$.index}（${$.nickName || $.UserName}）京喜农场active】${data.active}`);
+                } else {
+                  console.log( `【账号${$.index}（${$.nickName || $.UserName}）京喜农场】未选择种子，请先去京喜农场选择种子`);
+                }
+              }
+            } else {
+              console.log(`京喜农场返回值解析异常：${JSON.stringify(data)}`);
+            }
+          }
+        } catch (e) {
+          $.logErr(e, resp);
+        } finally {
+          resolve()
+        }
+      }
+    );
+  })
+}
+
 function getJdPet(){
   const JDPet_API_HOST = "https://api.m.jd.com/client.action";
 
@@ -373,7 +427,7 @@ async function getJdZZ() {
               data = JSON.parse(data);
               if (data.data.shareTaskRes) {
                 console.log(`【账号${$.index}（${$.nickName || $.UserName}）京东赚赚】${data.data.shareTaskRes.itemId}`);
-                              } else {
+              } else {
                 //console.log(`已满5人助力,暂时看不到您的京东赚赚好友助力码`)
               }
             }
@@ -396,7 +450,7 @@ async function getJdZZ() {
         'Connection': 'keep-alive',
         'Content-Type': 'application/json',
         'Referer': 'http://wq.jd.com/wxapp/pages/hd-interaction/index/index',
-        'User-Agent': $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0") : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0"),
+        'User-Agent': $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0"),
         'Accept-Language': 'zh-cn',
         'Accept-Encoding': 'gzip, deflate, br',
       }
@@ -565,7 +619,7 @@ async function getJoy(){
         'Host': 'api.m.jd.com',
         'Accept': '*/*',
         'Connection': 'keep-alive',
-        "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0") : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0"),
+        "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0"),
         'Accept-Language': 'zh-cn',
         'Referer': 'https://crazy-joy.jd.com/',
         'origin': 'https://crazy-joy.jd.com',
@@ -600,6 +654,7 @@ async function getShareCode() {
   console.log(`======账号${$.index}开始======`)
   await getJdFactory()
   await getJxFactory()
+  await getJxNc()
   await getJdPet()
   await getPlantBean()
   await getJDFruit()
@@ -631,7 +686,7 @@ function TotalBean() {
         "Connection": "keep-alive",
         "Cookie": cookie,
         "Referer": "https://wqs.jd.com/my/jingdou/my.shtml?sceneval=2",
-        "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0") : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0")
+        "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0")
       }
     }
     $.post(options, (err, resp, data) => {

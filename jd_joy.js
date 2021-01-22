@@ -121,7 +121,7 @@ async function deskGoodsTask() {
        }
      }
    } else {
-     console.log(`限时商品货架已下架`);
+     console.log(`\n限时商品货架已下架`);
    }
  }
 }
@@ -220,13 +220,50 @@ async function petTask() {
     //每日签到
     if (item['taskType'] === 'SignEveryDay') {
       if (item['receiveStatus'] === 'chance_left') {
-        console.log('未完成,需要自己手动去微信小程序【来客有礼】签到，可获得京豆奖励')
+        console.log('每日签到未完成,需要自己手动去微信小程序【来客有礼】签到，可获得京豆奖励')
       } else if (item['receiveStatus'] === 'unreceive') {
         //已签到，领取签到后的狗粮
         const res = await getFood('SignEveryDay');
         console.log(`领取每日签到狗粮结果：${res.data}`);
       }
     }
+    //每日赛跑
+    if (item['taskType'] === 'race') {
+      if (item['receiveStatus'] === 'chance_left') {
+        console.log('每日赛跑未完成')
+      } else if (item['receiveStatus'] === 'unreceive') {
+        const res = await getFood('race');
+        console.log(`领取每日赛跑狗粮结果：${res.data}`);
+      }
+    }
+    //每日兑换
+    if (item['taskType'] === 'exchange') {
+      if (item['receiveStatus'] === 'chance_left') {
+        console.log('每日兑换未完成')
+      } else if (item['receiveStatus'] === 'unreceive') {
+        const res = await getFood('exchange');
+        console.log(`领取每日兑换狗粮结果：${res.data}`);
+      }
+    }
+    //每日帮好友喂一次狗粮
+    if (item['taskType'] === 'HelpFeed') {
+      if (item['receiveStatus'] === 'chance_left') {
+        console.log('每日帮好友喂一次狗粮未完成')
+      } else if (item['receiveStatus'] === 'unreceive') {
+        const res = await getFood('HelpFeed');
+        console.log(`领取每日帮好友喂一次狗粮 狗粮结果：${res.data}`);
+      }
+    }
+    //每日喂狗粮
+    if (item['taskType'] === 'FeedEveryDay') {
+      if (item['taskStatus'] === 'processing') {
+        console.log(`\n${item['taskName']}任务进行中\n`)
+      } else if (item['receiveStatus'] === 'unreceive') {
+        const res = await getFood('FeedEveryDay');
+        console.log(`领取每日帮好友喂一次狗粮 狗粮结果：${res.data}`);
+      }
+    }
+    //
     //邀请用户助力,领狗粮.(需手动去做任务)
     if (item['taskType'] === 'InviteUser') {
       if (item['receiveStatus'] === 'chance_left') {
@@ -800,7 +837,7 @@ function TotalBean() {
         "Connection": "keep-alive",
         "Cookie": cookie,
         "Referer": "https://wqs.jd.com/my/jingdou/my.shtml?sceneval=2",
-        "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0") : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0")
+        "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0")
       }
     }
     $.post(options, (err, resp, data) => {
@@ -838,7 +875,7 @@ function taskUrl(url, Host, reqSource) {
       'Connection': 'keep-alive',
       'Content-Type': 'application/json',
       'Referer': 'https://jdjoy.jd.com/pet/index',
-      'User-Agent': $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0") : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0"),
+      'User-Agent': $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0"),
       'Accept-Language': 'zh-cn',
       'Accept-Encoding': 'gzip, deflate, br',
     }
@@ -850,7 +887,7 @@ function taskPostUrl(url, body, reqSource, Host, ContentType) {
     body: body,
     headers: {
       'Cookie': cookie,
-      'User-Agent': $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0") : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0"),
+      'User-Agent': $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.2.2;14.2;%E4%BA%AC%E4%B8%9C/9.2.2 CFNetwork/1206 Darwin/20.1.0"),
       'reqSource': reqSource,
       'Content-Type': ContentType,
       'Host': Host,
